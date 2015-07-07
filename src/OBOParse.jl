@@ -2,7 +2,7 @@ module OBOParse
 
 export
     # term
-    Term, isobsolete, is_a,
+    isobsolete, is_a,
 
     # parser
     parseOBO, getterms
