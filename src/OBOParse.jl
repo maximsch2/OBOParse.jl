@@ -5,10 +5,12 @@ export
     isobsolete, is_a,
 
     # parser
-    parseOBO, getterms
+    loadOBO,
+    gettermbyid, gettermbyname
 
 
 include("term.jl")
 include("parser.jl")
+include("ontology.jl")
 
 end # OBOParse module

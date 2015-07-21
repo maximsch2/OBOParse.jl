@@ -1,4 +1,6 @@
 import OBOParse.removecomments
+import OBOParse.parseOBO, OBOParse.getterms
+
 
 facts("removecomments tests") do
     @fact removecomments("test") => "test"
@@ -18,6 +20,16 @@ facts("parseOBO tests") do
 
     @fact terms["GO:0000005"].isa => [terms["GO:0000004"]]
 end
+
+facts("loadOBO tests") do
+    GO = loadOBO("$testdir/data/go_mini.obo", "GO")
+
+    @fact length(GO) => 4
+    #@fact header["format-version"] => ["1.2"]
+
+    @fact gettermbyid(GO, 5).isa => [gettermbyid(GO, 4)]
+end
+
 
 #
 # let

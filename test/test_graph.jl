@@ -4,13 +4,13 @@ function test_isa(term1, term2)
 end
 
 facts("is_a relationship") do
-    header, stanzas = parseOBO("$testdir/data/go_mini.obo")
-    terms = getterms(stanzas)
 
-    term1 = terms["GO:0000001"]
-    term2 = terms["GO:0000002"]
-    term4 = terms["GO:0000004"]
-    term5 = terms["GO:0000005"]
+    GO = loadOBO("$testdir/data/go_mini.obo", "GO")
+
+    term1 = gettermbyid(GO, 1)
+    term2 = gettermbyid(GO, 2)
+    term4 = gettermbyid(GO, 4)
+    term5 = gettermbyid(GO, 5)
 
     test_isa(term1, term2)
     test_isa(term4, term2)
