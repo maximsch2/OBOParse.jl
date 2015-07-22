@@ -31,7 +31,7 @@ gettermbyid(ontology::Ontology, id::Integer) = gettermbyid(ontology, gettermid(o
 import Base.length
 length(ontology::Ontology) =  length(ontology.terms)
 
-parents(ontology::Ontology, term::Term) = [term.isa...]
+parents(ontology::Ontology, term::Term) = [is_a(term)...]
 
 children(ontology::Ontology, term::Term) = [filter(t -> t != term && term in parents(ontology, t), values(ontology.terms))...]
 
@@ -40,15 +40,14 @@ descendants(ontology::Ontology, term::Term) = [filter(t -> t != term && is_a(t, 
 ancestors(ontology::Ontology, term::Term) = [filter(t -> t != term && is_a(term, t), values(ontology.terms))...]
 
 
-
 function is_a(term1::Term, term2::Term)
     if term1 == term2
         return true
     end
-    if length(term1.isa) == 0
+    if length(is_a(term1)) == 0
         return false
     end
-    for p in term1.isa
+    for p in is_a(term1)
         if is_a(p, term2)
             return true
         end

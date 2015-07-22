@@ -143,11 +143,29 @@ function getterms(arr::Vector{Stanza})
             otherterm = get!(result, id) do
                 Term(id)
             end
-            push!(term.isa, otherterm)
+            push!(is_a(term), otherterm)
+        end
+
+        for rel in get(st.tagvalues, "relationship", UTF8String[])
+          rel = strip(rel)
+          tmp = split(rel)
+          length(tmp) == 2 || error("Failed to parse relationship field: $rel")
+
+          rel_type = symbol(tmp[1])
+          rel_id = tmp[2]
+
+          otherterm = get!(result, rel_id) do
+              Term(rel_id)
+          end
+
+          if !haskey(term.relationships, rel_type)
+            term.relationships[rel_type] = Term[]
+          end
+          push!(term.relationships[rel_type], otherterm)
         end
 
         term.obsolete = getuniqueval(st, "is_obsolete") == "true"
-        if term.obsolete && length(term.isa) > 0
+        if term.obsolete && length(is_a(term)) > 0
             error("Obsolete term $term contains is_a relationship")
         end
 
@@ -164,6 +182,8 @@ function getterms(arr::Vector{Stanza})
                 term.tagvalues[k] = v
             end
         end
+
+
     end
     result
 end

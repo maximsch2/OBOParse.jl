@@ -30,6 +30,18 @@ facts("loadOBO tests") do
     @fact is_a(gettermbyid(GO, 5), gettermbyid(GO, 4)) => true
 end
 
+facts("test parse go") do
+  GO = loadOBO("$testdir/data/go.obo", "GO")
+  @fact length(GO) => greater_than(71)
+
+  term1 = gettermbyid(GO, 18)
+  term2 = gettermbyid(GO, 6310)
+
+  @fact haskey(term1.relationships, :regulates) => true
+  @fact term1.relationships[:regulates] => [term2]
+
+  @fact haskey(term2.relationships, :regulates) => false
+end
 
 #
 # let
