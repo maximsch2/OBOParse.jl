@@ -3,7 +3,7 @@ function test_isa(term1, term2)
     @fact is_a(term2, term1) => false
 end
 
-facts("is_a relationship") do
+facts("is_a relationship tests") do
 
     GO = loadOBO("$testdir/data/go_mini.obo", "GO")
 
@@ -20,14 +20,15 @@ facts("is_a relationship") do
     @fact is_a(term1, term5) => false
     @fact is_a(term5, term1) => false
 
-end
+    @fact parents(GO, term1) => [term2]
+    @fact isempty(parents(GO, term2)) => true
+    @fact parents(GO, term4) => [term2]
+    @fact parents(GO, term5) => [term4]
 
-    # @test parents(term1) == [term2]
-    # @test isempty(parents(term2))
-    # @test parents(term4) == [term2]
-    # @test parents(term5) == [term4]
-    #
-    # @test isempty(children(term1))
-    # @test children(term2) == [term1, term4]
-    # @test children(term4) == [term5]
-    # @test isempty(children(term5))
+
+    @fact children(GO, term1) => []
+    @fact Set(children(GO, term2)) => Set([term1, term4])
+    @fact children(GO, term4) => [term5]
+    @fact children(GO, term5) => []
+
+end

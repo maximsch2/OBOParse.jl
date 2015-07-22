@@ -3,7 +3,7 @@
 type Stanza
     Typ::UTF8String # Official ones are: "Term", "Typedef" and "Instance"
     id::UTF8String
-    tagvalues::Dict{UTF8String, Array{UTF8String, 1}}
+    tagvalues::Dict{UTF8String, Vector{UTF8String}}
 end
 
 function find_first_nonescaped(s, ch)
@@ -62,7 +62,7 @@ end
 const r_stanza = r"^\[(.*)\]$"
 
 function parsetagvalues(s)
-    vals = Dict{ASCIIString, Array{UTF8String, 1}}()
+    vals = Dict{ASCIIString, Vector{UTF8String}}()
 
     for line in eachline(s)
         line = strip(removecomments(line))
@@ -129,7 +129,7 @@ function trysetuniqueval(st, term, tag, field)
 end
 
 
-function getterms(arr::Array{Stanza, 1})
+function getterms(arr::Vector{Stanza})
     result = Dict{UTF8String, Term}()
 
     for st in arr
@@ -138,8 +138,6 @@ function getterms(arr::Array{Stanza, 1})
         term = get!(result, st.id) do
             Term(st.id)
         end
-
-
 
         for id in get(st.tagvalues, "is_a", UTF8String[])
             otherterm = get!(result, id) do
@@ -168,4 +166,10 @@ function getterms(arr::Array{Stanza, 1})
         end
     end
     result
+end
+
+function gettypedefs(arr::Vector{Stanza})
+  result = Dict{UTF8String, Typedef}()
+
+  result
 end

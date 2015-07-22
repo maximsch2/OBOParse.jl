@@ -3,12 +3,14 @@ type Ontology
     header
     prefix
     terms::Dict{UTF8String, Term}
+    typedefs::Dict{UTF8String, Typedef}
 end
 
 function loadOBO(fn::String, prefix)
     header, stanzas = parseOBO(fn)
     terms = getterms(stanzas)
-    Ontology(header, prefix, terms)
+    typedefs = gettypedefs(stanzas)
+    Ontology(header, prefix, terms, typedefs)
 end
 
 function gettermbyname(ontology::Ontology, name::String)
@@ -28,3 +30,28 @@ gettermbyid(ontology::Ontology, id::Integer) = gettermbyid(ontology, gettermid(o
 
 import Base.length
 length(ontology::Ontology) =  length(ontology.terms)
+
+parents(ontology::Ontology, term::Term) = [term.isa...]
+
+children(ontology::Ontology, term::Term) = [filter(t -> t != term && term in parents(ontology, t), values(ontology.terms))...]
+
+descendants(ontology::Ontology, term::Term) = [filter(t -> t != term && is_a(t, term), values(ontology.terms))...]
+
+ancestors(ontology::Ontology, term::Term) = [filter(t -> t != term && is_a(term, t), values(ontology.terms))...]
+
+
+
+function is_a(term1::Term, term2::Term)
+    if term1 == term2
+        return true
+    end
+    if length(term1.isa) == 0
+        return false
+    end
+    for p in term1.isa
+        if is_a(p, term2)
+            return true
+        end
+    end
+    return false
+end

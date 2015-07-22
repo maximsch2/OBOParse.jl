@@ -7,9 +7,9 @@ type Term
     def::UTF8String
     isa::Vector{Term}
     synonyms::Vector{UTF8String}
-    tagvalues::Dict{UTF8String, Array{UTF8String, 1}}
+    tagvalues::Dict{UTF8String, Vector{UTF8String}}
 
-    Term(id) = new(id, "", false, "", "", Term[], UTF8String[], Dict{UTF8String, Array{UTF8String, 1}}())
+    Term(id) = new(id, "", false, "", "", Term[], UTF8String[], Dict{UTF8String, Vector{UTF8String}}())
 end
 
 
@@ -19,19 +19,3 @@ Base.show(io::IO, term::Term) = @printf io "Term(\"%s\", \"%s\")" term.id term.n
 Base.showcompact(io::IO, term::Term) = print(io, term.id)
 
 isobsolete(term::Term) = term.obsolete
-
-
-function is_a(term1::Term, term2::Term)
-    if term1 == term2
-        return true
-    end
-    if length(term1.isa) == 0
-        return false
-    end
-    for p in term1.isa
-        if is_a(p, term2)
-            return true
-        end
-    end
-    return false
-end

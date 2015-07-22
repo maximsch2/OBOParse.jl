@@ -18,7 +18,7 @@ facts("parseOBO tests") do
     terms = getterms(stanzas)
     @fact length(terms) => 4
 
-    @fact terms["GO:0000005"].isa => [terms["GO:0000004"]]
+    @fact is_a(terms["GO:0000005"], terms["GO:0000004"]) => true
 end
 
 facts("loadOBO tests") do
@@ -27,7 +27,7 @@ facts("loadOBO tests") do
     @fact length(GO) => 4
     #@fact header["format-version"] => ["1.2"]
 
-    @fact gettermbyid(GO, 5).isa => [gettermbyid(GO, 4)]
+    @fact is_a(gettermbyid(GO, 5), gettermbyid(GO, 4)) => true
 end
 
 
