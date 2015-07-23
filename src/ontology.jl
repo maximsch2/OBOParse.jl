@@ -28,29 +28,38 @@ gettermid(ontology::Ontology, id::Integer) = @sprintf("%s:%07d", ontology.prefix
 gettermbyid(ontology::Ontology, id::String) = ontology.terms[id]
 gettermbyid(ontology::Ontology, id::Integer) = gettermbyid(ontology, gettermid(ontology, id))
 
+allterms(ontology::Ontology) = values(ontology.terms)
+
 import Base.length
 length(ontology::Ontology) =  length(ontology.terms)
 
-parents(ontology::Ontology, term::Term) = [is_a(term)...]
-
-children(ontology::Ontology, term::Term) = [filter(t -> t != term && term in parents(ontology, t), values(ontology.terms))...]
-
-descendants(ontology::Ontology, term::Term) = [filter(t -> t != term && is_a(t, term), values(ontology.terms))...]
-
-ancestors(ontology::Ontology, term::Term) = [filter(t -> t != term && is_a(term, t), values(ontology.terms))...]
+parents(ontology::Ontology, term::Term, rel::Symbol = :is_a) = [term.relationships[rel]...]
 
 
-function is_a(term1::Term, term2::Term)
+children(ontology::Ontology, term::Term, rel::Symbol = :is_a) = [filter(t -> t != term && term in parents(ontology, t, rel), allterms(ontology))...]
+
+descendants(ontology::Ontology, term::Term, rel::Symbol = :is_a) = [filter(t -> t != term && satisfies(ontology, t, rel, term), allterms(ontology))...]
+
+ancestors(ontology::Ontology, term::Term, rel::Symbol = :is_a) = [filter(t -> t != term && satisfies(ontology, term, rel, t), allterms(ontology))...]
+
+
+function satisfies(ontology::Ontology, term1::Term, rel::Symbol, term2::Term)
     if term1 == term2
-        return true
+        return true # TODO: should check if relationship is is_reflexive
     end
-    if length(is_a(term1)) == 0
-        return false
+
+    if term2 in term1.relationships[rel]
+      return true
     end
-    for p in is_a(term1)
-        if is_a(p, term2)
+
+    # TODO: check if transitive & non-cyclical before doing so
+    for p in term1.relationships[rel]
+        if satisfies(ontology, p, rel, term2)
             return true
         end
     end
+
     return false
 end
+
+is_a(ontology::Ontology, term1::Term, term2::Term) = satisfies(ontology, term1, :is_a, term2)

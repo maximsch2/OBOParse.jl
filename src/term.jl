@@ -1,3 +1,5 @@
+using DataStructures
+
 type Term
     id::UTF8String
     name::UTF8String
@@ -8,8 +10,8 @@ type Term
     synonyms::Vector{UTF8String}
     tagvalues::Dict{UTF8String, Vector{UTF8String}}
 
-    relationships::Dict{Symbol, Vector{Term}}
-    Term(id) = new(id, "", false, "", "", UTF8String[], Dict{UTF8String, Vector{UTF8String}}(), [:is_a => Term[]])
+    relationships::DefaultDict{Symbol, Vector{Term}, Function}
+    Term(id) = new(id, "", false, "", "", UTF8String[], Dict{UTF8String, Vector{UTF8String}}(), DefaultDict(Symbol, Vector{Term}, () -> Term[]))
 end
 
 
@@ -19,5 +21,3 @@ Base.show(io::IO, term::Term) = @printf io "Term(\"%s\", \"%s\")" term.id term.n
 Base.showcompact(io::IO, term::Term) = print(io, term.id)
 
 isobsolete(term::Term) = term.obsolete
-
-is_a(term::Term) = term.relationships[:is_a]
