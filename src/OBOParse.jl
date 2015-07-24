@@ -8,7 +8,8 @@ export
     loadOBO,
     gettermbyid, gettermbyname,
     parents, children,
-    descendants, ancestors
+    descendants, ancestors,
+    Ontology, Term
 
 
 include("term.jl")

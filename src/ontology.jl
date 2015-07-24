@@ -15,7 +15,7 @@ end
 
 function gettermbyname(ontology::Ontology, name::String)
     lname = lowercase(name)
-    for term in values(ontology.terms)
+    for term in allterms(ontology)
         if lowercase(term.name) == lname
             return term
         end
