@@ -33,7 +33,7 @@ allterms(ontology::Ontology) = values(ontology.terms)
 import Base.length
 length(ontology::Ontology) =  length(ontology.terms)
 
-parents(ontology::Ontology, term::Term, rel::Symbol = :is_a) = [term.relationships[rel]...]
+parents(ontology::Ontology, term::Term, rel::Symbol = :is_a) = [relationship(term, rel)...]
 
 
 children(ontology::Ontology, term::Term, rel::Symbol = :is_a) = [filter(t -> t != term && term in parents(ontology, t, rel), allterms(ontology))...]
@@ -48,12 +48,12 @@ function satisfies(ontology::Ontology, term1::Term, rel::Symbol, term2::Term)
         return true # TODO: should check if relationship is is_reflexive
     end
 
-    if term2 in term1.relationships[rel]
+    if term2 in relationship(term1, rel)
       return true
     end
 
     # TODO: check if transitive & non-cyclical before doing so
-    for p in term1.relationships[rel]
+    for p in relationship(term1, rel)
         if satisfies(ontology, p, rel, term2)
             return true
         end

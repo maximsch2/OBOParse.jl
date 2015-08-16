@@ -8,7 +8,7 @@ export
     loadOBO,
     gettermbyid, gettermbyname,
     parents, children,
-    descendants, ancestors,
+    descendants, ancestors, relationship,
     Ontology, Term
 
 

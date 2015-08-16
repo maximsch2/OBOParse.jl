@@ -3,39 +3,38 @@ import OBOParse.parseOBO, OBOParse.getterms
 
 
 facts("removecomments tests") do
-    @fact removecomments("test") => "test"
-    @fact removecomments("! this is commment") => ""
-    @fact removecomments("test ! comment") => "test "
-    @fact removecomments("test \\! aa") => "test \\! aa"
+    @fact removecomments("test") --> "test"
+    @fact removecomments("! this is commment") --> ""
+    @fact removecomments("test ! comment") --> "test "
+    @fact removecomments("test \\! aa") --> "test \\! aa"
 end
 
 
 facts("parseOBO tests") do
     header, stanzas = parseOBO("$testdir/data/go_mini.obo")
-    @fact length(stanzas) => 4
-    @fact header["format-version"] => ["1.2"]
+    @fact length(stanzas) --> 4
+    @fact header["format-version"] --> ["1.2"]
 
     terms = getterms(stanzas)
-    @fact length(terms) => 4
+    @fact length(terms) --> 4
 end
 
 facts("loadOBO tests") do
     GO = loadOBO("$testdir/data/go_mini.obo", "GO")
 
-    @fact length(GO) => 4
-    #@fact header["format-version"] => ["1.2"]
+    @fact length(GO) --> 4
 end
 
 facts("test parse go") do
   GO = loadOBO("$testdir/data/go.obo", "GO")
-  @fact length(GO) => greater_than(71)
+  @fact length(GO) --> greater_than(71)
 
   term1 = gettermbyid(GO, 18)
   term2 = gettermbyid(GO, 6310)
 
 
-  @fact term1.relationships[:regulates] => [term2]
-  @fact term2.relationships[:regulates] => []
+  @fact relationship(term1, :regulates) --> [term2]
+  @fact relationship(term2, :regulates) --> []
 end
 
 #
