@@ -53,7 +53,7 @@ function parseOBO(stream::IO)
 end
 
 
-function parseOBO(filepath::String)
+function parseOBO(filepath::AbstractString)
     open(filepath, "r") do f
         parseOBO(f)
     end

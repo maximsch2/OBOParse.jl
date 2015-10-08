@@ -6,14 +6,14 @@ type Ontology
     typedefs::Dict{UTF8String, Typedef}
 end
 
-function loadOBO(fn::String, prefix)
+function loadOBO(fn, prefix)
     header, stanzas = parseOBO(fn)
     terms = getterms(stanzas)
     typedefs = gettypedefs(stanzas)
     Ontology(header, prefix, terms, typedefs)
 end
 
-function gettermbyname(ontology::Ontology, name::String)
+function gettermbyname(ontology::Ontology, name)
     lname = lowercase(name)
     for term in allterms(ontology)
         if lowercase(term.name) == lname
@@ -25,7 +25,7 @@ end
 
 gettermid(ontology::Ontology, id::Integer) = @sprintf("%s:%07d", ontology.prefix, id)
 
-gettermbyid(ontology::Ontology, id::String) = ontology.terms[id]
+gettermbyid(ontology::Ontology, id::AbstractString) = ontology.terms[id]
 gettermbyid(ontology::Ontology, id::Integer) = gettermbyid(ontology, gettermid(ontology, id))
 
 allterms(ontology::Ontology) = values(ontology.terms)
