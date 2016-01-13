@@ -33,14 +33,14 @@ allterms(ontology::Ontology) = values(ontology.terms)
 import Base.length
 length(ontology::Ontology) =  length(ontology.terms)
 
-parents(ontology::Ontology, term::Term, rel::Symbol = :is_a) = [relationship(term, rel)...]
+parents(ontology::Ontology, term::Term, rel::Symbol = :is_a) = Term[relationship(term, rel)...]
 
 
-children(ontology::Ontology, term::Term, rel::Symbol = :is_a) = [filter(t -> t != term && term in parents(ontology, t, rel), allterms(ontology))...]
+children(ontology::Ontology, term::Term, rel::Symbol = :is_a) = Term[filter(t -> t != term && term in parents(ontology, t, rel), allterms(ontology))...]
 
-descendants(ontology::Ontology, term::Term, rel::Symbol = :is_a) = [filter(t -> t != term && satisfies(ontology, t, rel, term), allterms(ontology))...]
+descendants(ontology::Ontology, term::Term, rel::Symbol = :is_a) = Term[filter(t -> t != term && satisfies(ontology, t, rel, term), allterms(ontology))...]
 
-ancestors(ontology::Ontology, term::Term, rel::Symbol = :is_a) = [filter(t -> t != term && satisfies(ontology, term, rel, t), allterms(ontology))...]
+ancestors(ontology::Ontology, term::Term, rel::Symbol = :is_a) = Term[filter(t -> t != term && satisfies(ontology, term, rel, t), allterms(ontology))...]
 
 
 function satisfies(ontology::Ontology, term1::Term, rel::Symbol, term2::Term)
