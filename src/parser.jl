@@ -171,7 +171,7 @@ function getterms(arr::Vector{Stanza})
         trysetuniqueval(st, term, "def", :def)
         trysetuniqueval(st, term, "namespace", :namespace)
 
-        append!(term.synonyms, get(st.tagvalues, "synonym", UTF8String[""]))
+        append!(term.synonyms, get(st.tagvalues, "synonym", UTF8String[]))
         for (k, v) in st.tagvalues
             if haskey(term.tagvalues, k)
                 append!(term.tagvalues[k], v)
