@@ -62,7 +62,7 @@ end
 const r_stanza = r"^\[(.*)\]$"
 
 function parsetagvalues(s)
-    vals = Dict{ASCIIString, Vector{String}}()
+    vals = Dict{String, Vector{String}}()
 
     for line in eachline(s)
         line = strip(removecomments(line))
@@ -151,7 +151,7 @@ function getterms(arr::Vector{Stanza})
           tmp = split(rel)
           length(tmp) == 2 || error("Failed to parse relationship field: $rel")
 
-          rel_type = symbol(tmp[1])
+          rel_type = Symbol(tmp[1])
           rel_id = tmp[2]
 
           otherterm = get!(result, rel_id) do
