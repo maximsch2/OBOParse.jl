@@ -2,8 +2,8 @@
 type Ontology
     header
     prefix
-    terms::Dict{UTF8String, Term}
-    typedefs::Dict{UTF8String, Typedef}
+    terms::Dict{String, Term}
+    typedefs::Dict{String, Typedef}
 end
 
 function loadOBO(fn, prefix)

@@ -1,15 +1,15 @@
 type Term
-    id::UTF8String
-    name::UTF8String
+    id::String
+    name::String
 
     obsolete::Bool
-    namespace::UTF8String
-    def::UTF8String
-    synonyms::Vector{UTF8String}
-    tagvalues::Dict{UTF8String, Vector{UTF8String}}
+    namespace::String
+    def::String
+    synonyms::Vector{String}
+    tagvalues::Dict{String, Vector{String}}
 
     relationships::Dict{Symbol, Vector{Term}}
-    Term(id) = new(id, "", false, "", "", UTF8String[], Dict{UTF8String, Vector{UTF8String}}(), Dict{Symbol, Vector{Term}}())
+    Term(id) = new(id, "", false, "", "", String[], Dict{String, Vector{String}}(), Dict{Symbol, Vector{Term}}())
 end
 
 

@@ -1,8 +1,8 @@
 immutable Typedef
-    id::UTF8String
-    name::UTF8String
-    namespace::UTF8String
-    xref::UTF8String
+    id::String
+    name::String
+    namespace::String
+    xref::String
 end
 
 import Base: isequal, ==

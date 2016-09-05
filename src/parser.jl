@@ -1,9 +1,9 @@
 # The OBO Flat File parser
 
 type Stanza
-    Typ::UTF8String # Official ones are: "Term", "Typedef" and "Instance"
-    id::UTF8String
-    tagvalues::Dict{UTF8String, Vector{UTF8String}}
+    Typ::String # Official ones are: "Term", "Typedef" and "Instance"
+    id::String
+    tagvalues::Dict{String, Vector{String}}
 end
 
 function find_first_nonescaped(s, ch)
@@ -62,7 +62,7 @@ end
 const r_stanza = r"^\[(.*)\]$"
 
 function parsetagvalues(s)
-    vals = Dict{ASCIIString, Vector{UTF8String}}()
+    vals = Dict{ASCIIString, Vector{String}}()
 
     for line in eachline(s)
         line = strip(removecomments(line))
@@ -111,7 +111,7 @@ function tagvalue(line)
 end
 
 function getuniqueval(st::Stanza, tagname)
-    arr = get(st.tagvalues, tagname, UTF8String[""])
+    arr = get(st.tagvalues, tagname, String[""])
     if length(arr) > 1
         error("Expect unique tag named $tagname")
     end
@@ -130,7 +130,7 @@ end
 
 
 function getterms(arr::Vector{Stanza})
-    result = Dict{UTF8String, Term}()
+    result = Dict{String, Term}()
 
     for st in arr
         st.Typ == "Term" || continue
@@ -139,14 +139,14 @@ function getterms(arr::Vector{Stanza})
             Term(st.id)
         end
 
-        for id in get(st.tagvalues, "is_a", UTF8String[])
+        for id in get(st.tagvalues, "is_a", String[])
             otherterm = get!(result, id) do
                 Term(id)
             end
             push!(relationship(term, :is_a), otherterm)
         end
 
-        for rel in get(st.tagvalues, "relationship", UTF8String[])
+        for rel in get(st.tagvalues, "relationship", String[])
           rel = strip(rel)
           tmp = split(rel)
           length(tmp) == 2 || error("Failed to parse relationship field: $rel")
@@ -171,7 +171,7 @@ function getterms(arr::Vector{Stanza})
         trysetuniqueval(st, term, "def", :def)
         trysetuniqueval(st, term, "namespace", :namespace)
 
-        append!(term.synonyms, get(st.tagvalues, "synonym", UTF8String[]))
+        append!(term.synonyms, get(st.tagvalues, "synonym", String[]))
         for (k, v) in st.tagvalues
             if haskey(term.tagvalues, k)
                 append!(term.tagvalues[k], v)
@@ -186,7 +186,7 @@ function getterms(arr::Vector{Stanza})
 end
 
 function gettypedefs(arr::Vector{Stanza})
-  result = Dict{UTF8String, Typedef}()
+  result = Dict{String, Typedef}()
 
   result
 end
