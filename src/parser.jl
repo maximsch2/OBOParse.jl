@@ -1,6 +1,6 @@
 # The OBO Flat File parser
 
-type Stanza
+immutable Stanza
     Typ::String # Official ones are: "Term", "Typedef" and "Instance"
     id::String
     tagvalues::Dict{String, Vector{String}}
@@ -10,27 +10,19 @@ function find_first_nonescaped(s, ch)
     i = searchindex(s, ch)
     while i > 0
         numescapes = 0
-        j = i - 1
-        while j > 0 && s[j] == '\\'
+        @inbounds for j in i-1:-1:1
+            (s[j] == '\\') || break
             numescapes += 1
-            j -= 1
         end
-
-        if numescapes % 2 == 0 # this is not escaped
-            return i
-        else
-            i = searchindex(s, ch, i+1)
-        end
+        iseven(numescapes) && return i # this is not escaped
+        i = searchindex(s, ch, i+1)
     end
     return i
 end
 
 function removecomments(line)
     i = find_first_nonescaped(line, "!")
-    if i == 0
-        return line[1:end]
-    end
-    return line[1:i-1]
+    return i > 0 ? line[1:i-1] : line
 end
 
 const id_tag = "id"
@@ -42,9 +34,7 @@ function parseOBO(stream::IO)
     while nextstanza != ""
         prevstanza = nextstanza
         vals, nextstanza = parsetagvalues(stream)
-        if !haskey(vals, id_tag)
-            error("Stanza is missing ID tag")
-        end
+        haskey(vals, id_tag) || error("Stanza is missing ID tag")
         id = vals[id_tag][1]
         push!(stanzas, Stanza(prevstanza, id, vals))
     end
@@ -53,11 +43,7 @@ function parseOBO(stream::IO)
 end
 
 
-function parseOBO(filepath::AbstractString)
-    open(filepath, "r") do f
-        parseOBO(f)
-    end
-end
+parseOBO(filepath::AbstractString) = open(parseOBO, filepath, "r")
 
 const r_stanza = r"^\[(.*)\]$"
 
@@ -67,19 +53,13 @@ function parsetagvalues(s)
     for line in eachline(s)
         line = strip(removecomments(line))
         m = match(r_stanza, line)
-        if m != nothing
-            return vals, m.captures[1]
-        end
+        (m !== nothing) && return vals, m.captures[1]
 
         isempty(line) && continue
 
         tag, value, ok = tagvalue(line)
         ok || error("cannot find a tag (position: $(position(s))), empty: $(isempty(line)), line: `$(line)`")
-        if haskey(vals, tag)
-            push!(vals[tag], value)
-        else
-            vals[tag] = [value]
-        end
+        push!(get!(()->Vector{String}(), vals, tag), value)
     end
 
     return vals, ""
@@ -91,9 +71,7 @@ function tagvalue(line)
     i = searchindex(line, ": ")
     if i == 0
         # empty tag value
-        if endswith(line, ":")
-            return line, "", true
-        end
+        endswith(line, ":") && (return line, "", true)
 
         # empty strings are dummy
         return "", "", false
@@ -101,21 +79,19 @@ function tagvalue(line)
 
     j = searchindex(line, " !")
     tag = line[1:i-1]
-    if j == 0
-        value = line[i+2:end]
-    else
-        value = line[i+2:j-1]
-    end
+    value = j==0 ? line[i+2:end] : line[i+2:j-1]
 
     return tag, value, true
 end
 
-function getuniqueval(st::Stanza, tagname)
-    arr = get(st.tagvalues, tagname, String[""])
-    if length(arr) > 1
-        error("Expect unique tag named $tagname")
+function getuniqueval(st::Stanza, tagname, def::String="")
+    if haskey(st.tagvalues, tagname)
+        arr = st.tagvalues[tagname]
+        (length(arr) > 1) && error("Expect unique tag named $tagname")
+        return arr[1]
+    else
+        return def
     end
-    return arr[1]
 end
 
 
@@ -135,37 +111,29 @@ function getterms(arr::Vector{Stanza})
     for st in arr
         st.Typ == "Term" || continue
 
-        term = get!(result, st.id) do
-            Term(st.id)
-        end
+        term = get!(() -> Term(st.id), result, st.id)
 
         for id in get(st.tagvalues, "is_a", String[])
-            otherterm = get!(result, id) do
-                Term(id)
-            end
+            otherterm = get!(() -> Term(id), result, id)
             push!(relationship(term, :is_a), otherterm)
         end
 
         for rel in get(st.tagvalues, "relationship", String[])
-          rel = strip(rel)
-          tmp = split(rel)
-          length(tmp) == 2 || error("Failed to parse relationship field: $rel")
+            rel = strip(rel)
+            tmp = split(rel)
+            length(tmp) == 2 || error("Failed to parse relationship field: $rel")
 
-          rel_type = Symbol(tmp[1])
-          rel_id = tmp[2]
+            rel_type = Symbol(tmp[1])
+            rel_id = tmp[2]
+            otherterm = get!(() -> Term(rel_id), result, rel_id)
 
-          otherterm = get!(result, rel_id) do
-              Term(rel_id)
-          end
-
-          push!(relationship(term, rel_type), otherterm)
+            push!(relationship(term, rel_type), otherterm)
         end
 
         term.obsolete = getuniqueval(st, "is_obsolete") == "true"
-        if term.obsolete && length(relationship(term ,:is_a)) > 0
+        if isobsolete(term) && length(relationship(term ,:is_a)) > 0
             error("Obsolete term $term contains is_a relationship")
         end
-
 
         trysetuniqueval(st, term, "name", :name)
         trysetuniqueval(st, term, "def", :def)
@@ -173,20 +141,14 @@ function getterms(arr::Vector{Stanza})
 
         append!(term.synonyms, get(st.tagvalues, "synonym", String[]))
         for (k, v) in st.tagvalues
-            if haskey(term.tagvalues, k)
-                append!(term.tagvalues[k], v)
-            else
-                term.tagvalues[k] = v
-            end
+            append!(get!(() -> Vector{String}(), term.tagvalues, k), v)
         end
-
 
     end
     result
 end
 
 function gettypedefs(arr::Vector{Stanza})
-  result = Dict{String, Typedef}()
-
-  result
+    result = Dict{String, Typedef}()
+    result
 end

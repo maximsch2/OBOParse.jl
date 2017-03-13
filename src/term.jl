@@ -19,9 +19,4 @@ Base.showcompact(io::IO, term::Term) = print(io, term.id)
 
 isobsolete(term::Term) = term.obsolete
 
-function relationship(term::Term, sym::Symbol)
-  if !haskey(term.relationships, sym)
-    term.relationships[sym] = Term[]
-  end
-  term.relationships[sym]
-end
+relationship(term::Term, sym::Symbol) = get!(() -> Term[], term.relationships, sym)

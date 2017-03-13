@@ -16,9 +16,7 @@ end
 function gettermbyname(ontology::Ontology, name)
     lname = lowercase(name)
     for term in allterms(ontology)
-        if lowercase(term.name) == lname
-            return term
-        end
+        (lowercase(term.name) == lname) && return term
     end
     error("Term not found: $name")
 end
@@ -32,8 +30,7 @@ allterms(ontology::Ontology) = values(ontology.terms)
 
 Base.length(ontology::Ontology) = length(ontology.terms)
 
-parents(ontology::Ontology, term::Term, rel::Symbol = :is_a) = Term[relationship(term, rel)...]
-
+parents(ontology::Ontology, term::Term, rel::Symbol = :is_a) = relationship(term, rel)
 
 children(ontology::Ontology, term::Term, rel::Symbol = :is_a) = Term[filter(t -> t != term && term in parents(ontology, t, rel), allterms(ontology))...]
 
