@@ -30,8 +30,7 @@ gettermbyid(ontology::Ontology, id::Integer) = gettermbyid(ontology, gettermid(o
 
 allterms(ontology::Ontology) = values(ontology.terms)
 
-import Base.length
-length(ontology::Ontology) =  length(ontology.terms)
+Base.length(ontology::Ontology) = length(ontology.terms)
 
 parents(ontology::Ontology, term::Term, rel::Symbol = :is_a) = Term[relationship(term, rel)...]
 
