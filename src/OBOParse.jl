@@ -7,7 +7,6 @@ export
     isobsolete, is_a,
 
     # parser
-    loadOBO,
     gettermbyid, gettermbyname,
     parents, children,
     descendants, ancestors, relationship,

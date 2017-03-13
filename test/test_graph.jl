@@ -5,7 +5,7 @@ end
 
 facts("is_a relationship tests") do
 
-    GO = loadOBO("$testdir/data/go_mini.obo", "GO")
+    GO = OBOParse.load("$testdir/data/go_mini.obo", "GO")
 
     term1 = gettermbyid(GO, 1)
     term2 = gettermbyid(GO, 2)

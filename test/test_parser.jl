@@ -10,7 +10,7 @@ facts("removecomments tests") do
 end
 
 
-facts("parseOBO tests") do
+facts("parseOBO() tests") do
     header, stanzas = parseOBO("$testdir/data/go_mini.obo")
     @fact length(stanzas) --> 4
     @fact header["format-version"] --> ["1.2"]
@@ -19,14 +19,14 @@ facts("parseOBO tests") do
     @fact length(terms) --> 4
 end
 
-facts("loadOBO tests") do
-    GO = loadOBO("$testdir/data/go_mini.obo", "GO")
+facts("load() tests") do
+    GO = OBOParse.load("$testdir/data/go_mini.obo", "GO")
 
     @fact length(GO) --> 4
 end
 
-facts("test parse go") do
-  GO = loadOBO("$testdir/data/go.obo", "GO")
+facts("test parse GO") do
+  GO = OBOParse.load("$testdir/data/go.obo", "GO")
   @fact length(GO) --> greater_than(71)
 
   term1 = gettermbyid(GO, 18)

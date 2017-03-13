@@ -6,7 +6,7 @@ type Ontology
     typedefs::Dict{String, Typedef}
 end
 
-function loadOBO(fn, prefix)
+function load(fn, prefix::AbstractString)
     header, stanzas = parseOBO(fn)
     terms = getterms(stanzas)
     typedefs = gettypedefs(stanzas)
