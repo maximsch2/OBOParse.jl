@@ -1,12 +1,12 @@
 
-type Ontology
-    header
-    prefix
-    terms::Dict{String, Term}
+immutable Ontology
+    header::Dict{String, Vector{String}}
+    prefix::String
+    terms::Dict{TermId, Term}
     typedefs::Dict{String, Typedef}
 end
 
-function loadOBO(fn, prefix)
+function load(fn, prefix::AbstractString)
     header, stanzas = parseOBO(fn)
     terms = getterms(stanzas)
     typedefs = gettypedefs(stanzas)
@@ -16,47 +16,60 @@ end
 function gettermbyname(ontology::Ontology, name)
     lname = lowercase(name)
     for term in allterms(ontology)
-        if lowercase(term.name) == lname
-            return term
-        end
+        (lowercase(term.name) == lname) && return term
     end
     error("Term not found: $name")
 end
 
 gettermid(ontology::Ontology, id::Integer) = @sprintf("%s:%07d", ontology.prefix, id)
 
-gettermbyid(ontology::Ontology, id::AbstractString) = ontology.terms[id]
+# deprecate?
+gettermbyid(ontology::Ontology, id::TermId) = ontology.terms[id]
 gettermbyid(ontology::Ontology, id::Integer) = gettermbyid(ontology, gettermid(ontology, id))
 
 allterms(ontology::Ontology) = values(ontology.terms)
 
-import Base.length
-length(ontology::Ontology) =  length(ontology.terms)
+Base.getindex(ontology::Ontology, term_id::TermId) = ontology.terms[term_id]
 
-parents(ontology::Ontology, term::Term, rel::Symbol = :is_a) = Term[relationship(term, rel)...]
+Base.getindex(ontology::Ontology, term_ids::Set{TermId}) =
+    [ontology[t_id] for t_id in term_ids]
 
+Base.length(ontology::Ontology) = length(ontology.terms)
 
-children(ontology::Ontology, term::Term, rel::Symbol = :is_a) = Term[filter(t -> t != term && term in parents(ontology, t, rel), allterms(ontology))...]
+parents(ontology::Ontology, term::Term, rel::Symbol = :is_a) = ontology[relationship(term, rel)]
+children(ontology::Ontology, term::Term, rel::Symbol = :is_a) = ontology[rev_relationship(term, rel)]
 
-descendants(ontology::Ontology, term::Term, rel::Symbol = :is_a) = Term[filter(t -> t != term && satisfies(ontology, t, rel, term), allterms(ontology))...]
+# return the set of all nodes of the ontology DAG that could be visited from `term`
+# node when traveling along `rel` edges using `rev` direction
+function transitive_closure{T}(ontology::Ontology, term::Term, rel::Symbol, rev::Type{Val{T}} = Val{false})
+    # TODO: check if transitive & non-cyclical before doing so?
+    res = Set{TermId}()
+    frontier_ids = Set{TermId}((term.id,))
+    while true
+        new_ids = Set{TermId}()
+        for f_id in frontier_ids
+            f_term = ontology[f_id]
+            f_rel_ids = T ? rev_relationship(f_term, rel) : relationship(f_term, rel)
+            union!(new_ids, f_rel_ids)
+        end
+        frontier_ids = setdiff!(new_ids, res)
+        isempty(frontier_ids) && break # no new terms
+        union!(res, frontier_ids)
+    end
+    return res
+end
 
-ancestors(ontology::Ontology, term::Term, rel::Symbol = :is_a) = Term[filter(t -> t != term && satisfies(ontology, term, rel, t), allterms(ontology))...]
-
+descendants(ontology::Ontology, term::Term, rel::Symbol = :is_a) = ontology[transitive_closure(ontology, term, rel, Val{true})]
+ancestors(ontology::Ontology, term::Term, rel::Symbol = :is_a) = ontology[transitive_closure(ontology, term, rel, Val{false})]
 
 function satisfies(ontology::Ontology, term1::Term, rel::Symbol, term2::Term)
-    if term1 == term2
-        return true # TODO: should check if relationship is is_reflexive
-    end
-
-    if term2 in relationship(term1, rel)
-      return true
-    end
+    (term1 == term2) && return true # TODO: should check if relationship is is_reflexive
+    (term2.id in relationship(term1, rel)) && return true
 
     # TODO: check if transitive & non-cyclical before doing so
-    for p in relationship(term1, rel)
-        if satisfies(ontology, p, rel, term2)
-            return true
-        end
+    for p_id in relationship(term1, rel)
+        p = ontology.terms[p_id]
+        satisfies(ontology, p, rel, term2) && return true
     end
 
     return false

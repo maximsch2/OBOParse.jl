@@ -3,21 +3,20 @@ __precompile__()
 module OBOParse
 
 export
+    # types
+    Ontology, Term,
+
     # term
     isobsolete, is_a,
 
     # parser
-    loadOBO,
     gettermbyid, gettermbyname,
     parents, children,
-    descendants, ancestors, relationship,
-    Ontology, Term
-
+    descendants, ancestors, relationship
 
 include("term.jl")
 include("typedef.jl")
 include("parser.jl")
 include("ontology.jl")
-
 
 end # OBOParse module

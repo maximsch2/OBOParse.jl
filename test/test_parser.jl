@@ -1,40 +1,37 @@
 import OBOParse.removecomments
 import OBOParse.parseOBO, OBOParse.getterms
 
-
-facts("removecomments tests") do
-    @fact removecomments("test") --> "test"
-    @fact removecomments("! this is commment") --> ""
-    @fact removecomments("test ! comment") --> "test "
-    @fact removecomments("test \\! aa") --> "test \\! aa"
+@testset "removecomments tests" begin
+    @test removecomments("test") == "test"
+    @test removecomments("! this is commment") == ""
+    @test removecomments("test ! comment") == "test "
+    @test removecomments("test \\! aa") == "test \\! aa"
 end
 
-
-facts("parseOBO tests") do
+@testset "parseOBO() tests" begin
     header, stanzas = parseOBO("$testdir/data/go_mini.obo")
-    @fact length(stanzas) --> 4
-    @fact header["format-version"] --> ["1.2"]
+    @test length(stanzas) == 4
+    @test header["format-version"] == ["1.2"]
 
     terms = getterms(stanzas)
-    @fact length(terms) --> 4
+    @test length(terms) == 4
 end
 
-facts("loadOBO tests") do
-    GO = loadOBO("$testdir/data/go_mini.obo", "GO")
+@testset "load() tests" begin
+    GO = OBOParse.load("$testdir/data/go_mini.obo", "GO")
 
-    @fact length(GO) --> 4
+    @test length(GO) == 4
 end
 
-facts("test parse go") do
-  GO = loadOBO("$testdir/data/go.obo", "GO")
-  @fact length(GO) --> greater_than(71)
+@testset "test parse GO" begin
+    GO = OBOParse.load("$testdir/data/go.obo", "GO")
+    @test length(GO) > 71
 
-  term1 = gettermbyid(GO, 18)
-  term2 = gettermbyid(GO, 6310)
+    term1 = gettermbyid(GO, 18)
+    term2 = gettermbyid(GO, 6310)
 
-
-  @fact relationship(term1, :regulates) --> [term2]
-  @fact relationship(term2, :regulates) --> []
+    @test relationship(term1, :regulates) == Set{OBOParse.TermId}((term2.id,))
+    @test relationship(term2, :regulates) == Set{OBOParse.TermId}()
 end
 
 #
