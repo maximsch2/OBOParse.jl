@@ -33,8 +33,8 @@ facts("test parse GO") do
   term2 = gettermbyid(GO, 6310)
 
 
-  @fact relationship(term1, :regulates) --> [term2]
-  @fact relationship(term2, :regulates) --> []
+  @fact relationship(term1, :regulates) --> Set{String}((term2.id,))
+  @fact relationship(term2, :regulates) --> Set{String}()
 end
 
 #

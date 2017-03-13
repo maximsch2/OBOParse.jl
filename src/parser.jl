@@ -94,28 +94,28 @@ function getuniqueval(st::Stanza, tagname, def::String="")
     end
 end
 
-
-function trysetuniqueval(st, term, tag, field)
-    tmp = getuniqueval(st, tag)
-    termval = getfield(term, field)
-    if tmp != "" && termval != "" && termval != tmp
-        error("Different values of $tag specified for $term")
-    end
-    setfield!(term, field, tmp)
-end
-
-
 function getterms(arr::Vector{Stanza})
     result = Dict{String, Term}()
 
     for st in arr
         st.Typ == "Term" || continue
 
-        term = get!(() -> Term(st.id), result, st.id)
+        term_obsolete = getuniqueval(st, "is_obsolete") == "true"
+        term_name = getuniqueval(st, "name")
+        term_def = getuniqueval(st, "def")
+        term_namespace = getuniqueval(st, "namespace")
+        if haskey(result, st.id)
+            # term was automatically created, re-create it with the correct properties,
+            # but preserve the existing relationships
+            term = Term(result[st.id], term_name, term_obsolete, term_namespace, term_def)
+        else # brand new term
+            term = result[st.id] = Term(st.id, term_name, term_obsolete, term_namespace, term_def)
+        end
 
-        for id in get(st.tagvalues, "is_a", String[])
-            otherterm = get!(() -> Term(id), result, id)
-            push!(relationship(term, :is_a), otherterm)
+        for otherid in get(st.tagvalues, "is_a", String[])
+            otherterm = get!(() -> Term(otherid), result, otherid)
+            push!(relationship(term, :is_a), otherid)
+            push!(rev_relationship(otherterm, :is_a), st.id)
         end
 
         for rel in get(st.tagvalues, "relationship", String[])
@@ -127,17 +127,13 @@ function getterms(arr::Vector{Stanza})
             rel_id = tmp[2]
             otherterm = get!(() -> Term(rel_id), result, rel_id)
 
-            push!(relationship(term, rel_type), otherterm)
+            push!(relationship(term, rel_type), rel_id)
+            push!(rev_relationship(otherterm, rel_type), st.id)
         end
 
-        term.obsolete = getuniqueval(st, "is_obsolete") == "true"
         if isobsolete(term) && length(relationship(term ,:is_a)) > 0
             error("Obsolete term $term contains is_a relationship")
         end
-
-        trysetuniqueval(st, term, "name", :name)
-        trysetuniqueval(st, term, "def", :def)
-        trysetuniqueval(st, term, "namespace", :namespace)
 
         append!(term.synonyms, get(st.tagvalues, "synonym", String[]))
         for (k, v) in st.tagvalues
