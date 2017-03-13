@@ -1,10 +1,9 @@
 function test_isa(onto, term1, term2)
-    @fact is_a(onto, term1, term2) --> true
-    @fact is_a(onto, term2, term1) --> false
+    @test is_a(onto, term1, term2)
+    @test !is_a(onto, term2, term1)
 end
 
-facts("is_a relationship tests") do
-
+@testset "is_a relationship tests" begin
     GO = OBOParse.load("$testdir/data/go_mini.obo", "GO")
 
     term1 = gettermbyid(GO, 1)
@@ -17,24 +16,22 @@ facts("is_a relationship tests") do
     test_isa(GO, term5, term4)
     test_isa(GO, term5, term2)
 
-    @fact is_a(GO, term1, term5) --> false
-    @fact is_a(GO, term5, term1) --> false
+    @test !is_a(GO, term1, term5)
+    @test !is_a(GO, term5, term1)
 
-    @fact parents(GO, term1) --> [term2]
-    @fact isempty(parents(GO, term2)) --> true
-    @fact parents(GO, term4) --> [term2]
-    @fact parents(GO, term5) --> [term4]
+    @test parents(GO, term1) == [term2]
+    @test isempty(parents(GO, term2))
+    @test parents(GO, term4) == [term2]
+    @test parents(GO, term5) == [term4]
 
+    @test children(GO, term1) == []
+    @test Set(children(GO, term2)) == Set([term1, term4])
+    @test children(GO, term4) == [term5]
+    @test children(GO, term5) == []
 
-    @fact children(GO, term1) --> []
-    @fact Set(children(GO, term2)) --> Set([term1, term4])
-    @fact children(GO, term4) --> [term5]
-    @fact children(GO, term5) --> []
+    @test ancestors(GO, term1) == [term2]
+    @test Set(ancestors(GO, term5)) == Set([term2, term4])
 
-
-    @fact ancestors(GO, term1) --> [term2]
-    @fact Set(ancestors(GO, term5)) --> Set([term2, term4])
-
-    @fact Set(descendants(GO, term2)) --> Set([term1, term4, term5])
-    @fact descendants(GO, term5) --> []
+    @test Set(descendants(GO, term2)) == Set([term1, term4, term5])
+    @test descendants(GO, term5) == []
 end

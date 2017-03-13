@@ -1,5 +1,5 @@
 using OBOParse
-using FactCheck
+using Base.Test
 
 const testdir = dirname(@__FILE__)
 
