@@ -2,7 +2,7 @@
 immutable Ontology
     header::Dict{String, Vector{String}}
     prefix::String
-    terms::Dict{String, Term}
+    terms::Dict{TermId, Term}
     typedefs::Dict{String, Typedef}
 end
 
@@ -23,14 +23,15 @@ end
 
 gettermid(ontology::Ontology, id::Integer) = @sprintf("%s:%07d", ontology.prefix, id)
 
-gettermbyid(ontology::Ontology, id::AbstractString) = ontology.terms[id]
+# deprecate?
+gettermbyid(ontology::Ontology, id::TermId) = ontology.terms[id]
 gettermbyid(ontology::Ontology, id::Integer) = gettermbyid(ontology, gettermid(ontology, id))
 
 allterms(ontology::Ontology) = values(ontology.terms)
 
-Base.getindex(ontology::Ontology, term_id::String) = ontology.terms[term_id]
+Base.getindex(ontology::Ontology, term_id::TermId) = ontology.terms[term_id]
 
-Base.getindex(ontology::Ontology, term_ids::Set{String}) =
+Base.getindex(ontology::Ontology, term_ids::Set{TermId}) =
     [ontology[t_id] for t_id in term_ids]
 
 Base.length(ontology::Ontology) = length(ontology.terms)
@@ -42,10 +43,10 @@ children(ontology::Ontology, term::Term, rel::Symbol = :is_a) = ontology[rev_rel
 # node when traveling along `rel` edges using `rev` direction
 function transitive_closure{T}(ontology::Ontology, term::Term, rel::Symbol, rev::Type{Val{T}} = Val{false})
     # TODO: check if transitive & non-cyclical before doing so?
-    res = Set{String}()
-    frontier_ids = Set{String}((term.id,))
+    res = Set{TermId}()
+    frontier_ids = Set{TermId}((term.id,))
     while true
-        new_ids = Set{String}()
+        new_ids = Set{TermId}()
         for f_id in frontier_ids
             f_term = ontology[f_id]
             f_rel_ids = T ? rev_relationship(f_term, rel) : relationship(f_term, rel)

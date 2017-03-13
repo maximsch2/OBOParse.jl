@@ -1,5 +1,7 @@
+const TermId = String
+
 immutable Term
-    id::String
+    id::TermId
     name::String
 
     obsolete::Bool
@@ -8,14 +10,14 @@ immutable Term
     synonyms::Vector{String}
     tagvalues::Dict{String, Vector{String}}
 
-    relationships::Dict{Symbol, Set{String}}
-    rev_relationships::Dict{Symbol, Set{String}} # reverse relationships
+    relationships::Dict{Symbol, Set{TermId}}
+    rev_relationships::Dict{Symbol, Set{TermId}} # reverse relationships
 
     Term(id::AbstractString, name::AbstractString="", obsolete::Bool=false,
          namespace::AbstractString="", def::AbstractString="") =
         new(id, name, obsolete, namespace, def, String[],
             Dict{String, Vector{String}}(),
-            Dict{Symbol, Set{String}}(), Dict{Symbol, Set{String}}())
+            Dict{Symbol, Set{TermId}}(), Dict{Symbol, Set{TermId}}())
     Term(term::Term, name::AbstractString=term.name, obsolete::Bool=term.obsolete,
          namespace::AbstractString=term.namespace, def::AbstractString=term.def) =
         new(term.id, term.name, obsolete, term.namespace, term.def, term.synonyms,
@@ -29,5 +31,5 @@ Base.showcompact(io::IO, term::Term) = print(io, term.id)
 
 isobsolete(term::Term) = term.obsolete
 
-relationship(term::Term, sym::Symbol) = get!(() -> Set{String}(), term.relationships, sym)
-rev_relationship(term::Term, sym::Symbol) = get!(() -> Set{String}(), term.rev_relationships, sym)
+relationship(term::Term, sym::Symbol) = get!(() -> Set{TermId}(), term.relationships, sym)
+rev_relationship(term::Term, sym::Symbol) = get!(() -> Set{TermId}(), term.rev_relationships, sym)
