@@ -1,7 +1,7 @@
 
-type Ontology
-    header
-    prefix
+immutable Ontology
+    header::Dict{String, Vector{String}}
+    prefix::String
     terms::Dict{String, Term}
     typedefs::Dict{String, Typedef}
 end
