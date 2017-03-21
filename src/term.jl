@@ -20,7 +20,7 @@ immutable Term
             Dict{Symbol, Set{TermId}}(), Dict{Symbol, Set{TermId}}())
     Term(term::Term, name::AbstractString=term.name, obsolete::Bool=term.obsolete,
          namespace::AbstractString=term.namespace, def::AbstractString=term.def) =
-        new(term.id, term.name, obsolete, term.namespace, term.def, term.synonyms,
+        new(term.id, name, obsolete, namespace, def, term.synonyms,
             term.tagvalues, term.relationships, term.rev_relationships)
 end
 

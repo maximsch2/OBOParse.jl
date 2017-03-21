@@ -21,6 +21,10 @@ end
     GO = OBOParse.load("$testdir/data/go_mini.obo", "GO")
 
     @test length(GO) == 4
+    @test GO["GO:0000002"].name == "two"
+    @test GO["GO:0000001"].name == "one"
+    @test GO["GO:0000004"].name == "four"
+    @test GO["GO:0000005"].name == "five"
 end
 
 @testset "test parse GO" begin

@@ -107,7 +107,7 @@ function getterms(arr::Vector{Stanza})
         if haskey(result, st.id)
             # term was automatically created, re-create it with the correct properties,
             # but preserve the existing relationships
-            term = Term(result[st.id], term_name, term_obsolete, term_namespace, term_def)
+            term = result[st.id] = Term(result[st.id], term_name, term_obsolete, term_namespace, term_def)
         else # brand new term
             term = result[st.id] = Term(st.id, term_name, term_obsolete, term_namespace, term_def)
         end
