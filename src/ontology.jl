@@ -41,13 +41,13 @@ children(ontology::Ontology, term::Term, rel::Symbol = :is_a) = ontology[rev_rel
 
 # return the set of all nodes of the ontology DAG that could be visited from `term`
 # node when traveling along `rel` edges using `rev` direction
-function transitive_closure{T}(ontology::Ontology, term::Term, rel::Symbol, rev::Type{Val{T}} = Val{false})
+function transitive_closure{T}(ontology::Ontology, term::Term, rels::Vector{Symbol}, rev::Type{Val{T}} = Val{false})
     # TODO: check if transitive & non-cyclical before doing so?
     res = Set{TermId}()
     frontier_ids = Set{TermId}((term.id,))
     while true
         new_ids = Set{TermId}()
-        for f_id in frontier_ids
+        for f_id in frontier_ids, rel in rels
             f_term = ontology[f_id]
             f_rel_ids = T ? rev_relationship(f_term, rel) : relationship(f_term, rel)
             union!(new_ids, f_rel_ids)
@@ -59,8 +59,10 @@ function transitive_closure{T}(ontology::Ontology, term::Term, rel::Symbol, rev:
     return res
 end
 
-descendants(ontology::Ontology, term::Term, rel::Symbol = :is_a) = ontology[transitive_closure(ontology, term, rel, Val{true})]
-ancestors(ontology::Ontology, term::Term, rel::Symbol = :is_a) = ontology[transitive_closure(ontology, term, rel, Val{false})]
+descendants(ontology::Ontology, term::Term, rels::Vector{Symbol}) = ontology[transitive_closure(ontology, term, rels, Val{true})]
+descendants(ontology::Ontology, term::Term, rel::Symbol = :is_a) = descendants(ontology, term, [rel]) 
+ancestors(ontology::Ontology, term::Term, rels::Vector{Symbol}) = ontology[transitive_closure(ontology, term, rels, Val{false})]
+ancestors(ontology::Ontology, term::Term, rel::Symbol = :is_a) = ancestors(ontology, term, [rel])
 
 function satisfies(ontology::Ontology, term1::Term, rel::Symbol, term2::Term)
     (term1 == term2) && return true # TODO: should check if relationship is is_reflexive
