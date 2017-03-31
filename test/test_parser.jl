@@ -10,21 +10,22 @@ end
 
 @testset "parseOBO() tests" begin
     header, stanzas = parseOBO("$testdir/data/go_mini.obo")
-    @test length(stanzas) == 4
+    @test length(stanzas) == 5
     @test header["format-version"] == ["1.2"]
 
     terms = getterms(stanzas)
-    @test length(terms) == 4
+    @test length(terms) == 5
 end
 
 @testset "load() tests" begin
     GO = OBOParse.load("$testdir/data/go_mini.obo", "GO")
 
-    @test length(GO) == 4
+    @test length(GO) == 5
     @test GO["GO:0000002"].name == "two"
     @test GO["GO:0000001"].name == "one"
     @test GO["GO:0000004"].name == "four"
     @test GO["GO:0000005"].name == "five"
+    @test GO["GO:0000006"].name == "six"
 end
 
 @testset "test parse GO" begin

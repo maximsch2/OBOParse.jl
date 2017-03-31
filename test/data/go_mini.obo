@@ -26,3 +26,10 @@ name: five
 namespace: biological_process
 def: DDD
 is_a: GO:0000004
+
+[Term]
+id: GO:0000006
+name: six
+namespace: biological_process
+def: EEE
+relationship: part_of GO:0000005

@@ -10,6 +10,7 @@ end
     term2 = gettermbyid(GO, 2)
     term4 = gettermbyid(GO, 4)
     term5 = gettermbyid(GO, 5)
+    term6 = gettermbyid(GO, 6)
 
     test_isa(GO, term1, term2)
     test_isa(GO, term4, term2)
@@ -34,4 +35,6 @@ end
 
     @test Set(descendants(GO, term2)) == Set([term1, term4, term5])
     @test descendants(GO, term5) == []
+    
+    @test Set(descendants(GO, term2, [:is_a, :part_of])) == Set([term1, term4, term5, term6])
 end
