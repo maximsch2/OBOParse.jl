@@ -39,9 +39,14 @@ Base.length(ontology::Ontology) = length(ontology.terms)
 parents(ontology::Ontology, term::Term, rel::Symbol = :is_a) = ontology[relationship(term, rel)]
 children(ontology::Ontology, term::Term, rel::Symbol = :is_a) = ontology[rev_relationship(term, rel)]
 
+# FIXME use const when 0.5 compatibility is dropped
+typealias VecOrTuple{T} Union{Vector{T}, Tuple{Vararg{T}}}
+
 # return the set of all nodes of the ontology DAG that could be visited from `term`
-# node when traveling along `rel` edges using `rev` direction
-function transitive_closure{T}(ontology::Ontology, term::Term, rels::Vector{Symbol}, rev::Type{Val{T}} = Val{false})
+# node when traveling along `rels` edges using `rev` direction
+function transitive_closure{T}(ontology::Ontology, term::Term,
+                               rels::VecOrTuple{Symbol},
+                               rev::Type{Val{T}} = Val{false})
     # TODO: check if transitive & non-cyclical before doing so?
     res = Set{TermId}()
     frontier_ids = Set{TermId}((term.id,))
@@ -59,10 +64,10 @@ function transitive_closure{T}(ontology::Ontology, term::Term, rels::Vector{Symb
     return res
 end
 
-descendants(ontology::Ontology, term::Term, rels::Vector{Symbol}) = ontology[transitive_closure(ontology, term, rels, Val{true})]
-descendants(ontology::Ontology, term::Term, rel::Symbol = :is_a) = descendants(ontology, term, [rel]) 
-ancestors(ontology::Ontology, term::Term, rels::Vector{Symbol}) = ontology[transitive_closure(ontology, term, rels, Val{false})]
-ancestors(ontology::Ontology, term::Term, rel::Symbol = :is_a) = ancestors(ontology, term, [rel])
+descendants(ontology::Ontology, term::Term, rels::VecOrTuple{Symbol}) = ontology[transitive_closure(ontology, term, rels, Val{true})]
+descendants(ontology::Ontology, term::Term, rel::Symbol = :is_a) = descendants(ontology, term, (rel,))
+ancestors(ontology::Ontology, term::Term, rels::VecOrTuple{Symbol}) = ontology[transitive_closure(ontology, term, rels, Val{false})]
+ancestors(ontology::Ontology, term::Term, rel::Symbol = :is_a) = ancestors(ontology, term, (rel,))
 
 function satisfies(ontology::Ontology, term1::Term, rel::Symbol, term2::Term)
     (term1 == term2) && return true # TODO: should check if relationship is is_reflexive
