@@ -3,7 +3,7 @@ function test_isa(onto, term1, term2)
     @test !is_a(onto, term2, term1)
 end
 
-@testset "is_a relationship tests" begin
+@testset "relationship tests" begin
     GO = OBOParse.load("$testdir/data/go_mini.obo", "GO")
 
     term1 = gettermbyid(GO, 1)
@@ -32,9 +32,14 @@ end
 
     @test ancestors(GO, term1) == [term2]
     @test Set(ancestors(GO, term5)) == Set([term2, term4])
+    @test Set(ancestors(GO, term6, :part_of)) == Set([term5])
+    @test Set(ancestors(GO, term6, (:is_a, :part_of))) == Set([term2, term4, term5])
+    @test Set(ancestors(GO, term6, [:is_a, :part_of])) == Set([term2, term4, term5])
 
     @test Set(descendants(GO, term2)) == Set([term1, term4, term5])
     @test descendants(GO, term5) == []
-    
+
+    @test Set(descendants(GO, term5, :part_of)) == Set([term6])
+    @test Set(descendants(GO, term2, (:is_a, :part_of))) == Set([term1, term4, term5, term6])
     @test Set(descendants(GO, term2, [:is_a, :part_of])) == Set([term1, term4, term5, term6])
 end
