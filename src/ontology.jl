@@ -18,7 +18,7 @@ function gettermbyname(ontology::Ontology, name)
     for term in allterms(ontology)
         (lowercase(term.name) == lname) && return term
     end
-    error("Term not found: $name")
+    throw(KeyError(name))
 end
 
 gettermid(ontology::Ontology, id::Integer) = @sprintf("%s:%07d", ontology.prefix, id)

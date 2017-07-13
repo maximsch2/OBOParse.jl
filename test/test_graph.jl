@@ -6,11 +6,21 @@ end
 @testset "relationship tests" begin
     GO = OBOParse.load("$testdir/data/go_mini.obo", "GO")
 
+    @test_throws KeyError gettermbyid(GO, 0)
     term1 = gettermbyid(GO, 1)
     term2 = gettermbyid(GO, 2)
     term4 = gettermbyid(GO, 4)
     term5 = gettermbyid(GO, 5)
     term6 = gettermbyid(GO, 6)
+
+    @test_throws KeyError gettermbyid(GO, OBOParse.gettermid(GO, 0))
+    @test gettermbyid(GO, OBOParse.gettermid(GO, 1)) == term1
+    @test gettermbyid(GO, "GO:0000001") == term1
+    @test gettermbyid(GO, OBOParse.gettermid(GO, 2)) == term2
+
+    @test_throws KeyError gettermbyname(GO, "zero")
+    @test gettermbyname(GO, "one") == term1
+    @test gettermbyname(GO, "two") == term2
 
     test_isa(GO, term1, term2)
     test_isa(GO, term4, term2)
