@@ -6,6 +6,10 @@ struct Stanza
     tagvalues::TagDict
 end
 
+struct OBOParseException <: Exception
+    msg::String
+end
+
 function find_first_nonescaped(s, ch)
     i = searchindex(s, ch)
     while i > 0
@@ -34,7 +38,7 @@ function parseOBO(stream::IO)
     while nextstanza != ""
         prevstanza = nextstanza
         vals, nextstanza = parsetagvalues(stream)
-        haskey(vals, id_tag) || error("Stanza is missing ID tag")
+        haskey(vals, id_tag) || throw(OBOParseException("Stanza is missing ID tag"))
         id = vals[id_tag][1]
         push!(stanzas, Stanza(prevstanza, id, vals))
     end
@@ -58,7 +62,7 @@ function parsetagvalues(s)
         isempty(line) && continue
 
         tag, value, ok = tagvalue(line)
-        ok || error("cannot find a tag (position: $(position(s))), empty: $(isempty(line)), line: `$(line)`")
+        ok || throw(OBOParseException("cannot find a tag (position: $(position(s))), empty: $(isempty(line)), line: `$(line)`"))
         push!(get!(()->Vector{String}(), vals, tag), value)
     end
 
@@ -87,7 +91,7 @@ end
 function getuniqueval(st::Stanza, tagname, def::String="")
     if haskey(st.tagvalues, tagname)
         arr = st.tagvalues[tagname]
-        (length(arr) > 1) && error("Expect unique tag named $tagname")
+        (length(arr) > 1) && throw(OBOParseException("Expect unique tag named $tagname"))
         return arr[1]
     else
         return def
@@ -121,7 +125,7 @@ function getterms(arr::Vector{Stanza})
         for rel in get(st.tagvalues, "relationship", String[])
             rel = strip(rel)
             tmp = split(rel)
-            length(tmp) == 2 || error("Failed to parse relationship field: $rel")
+            length(tmp) == 2 || throw(OBOParseException("Failed to parse relationship field: $rel"))
 
             rel_type = Symbol(tmp[1])
             rel_id = tmp[2]
@@ -132,7 +136,7 @@ function getterms(arr::Vector{Stanza})
         end
 
         if isobsolete(term) && length(relationship(term ,:is_a)) > 0
-            error("Obsolete term $term contains is_a relationship")
+            throw(OBOParseException("Obsolete term $term contains is_a relationship"))
         end
 
         append!(term.synonyms, get(st.tagvalues, "synonym", String[]))
