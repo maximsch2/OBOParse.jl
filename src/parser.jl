@@ -106,14 +106,25 @@ function getterms(arr::Vector{Stanza})
 
         term_obsolete = getuniqueval(st, "is_obsolete") == "true"
         term_name = getuniqueval(st, "name")
-        term_def = getuniqueval(st, "def")
+        term_def_and_refs = getuniqueval(st, "def")
+        term_def_matches = match(r"^\"([^\"]+)\"(?:\s\[(.+)\])?$", term_def_and_refs)
+        if term_def_matches !== nothing
+             term_def = term_def_matches[1]
+             term_refs = RefDict(begin
+                    Pair(split(ref, r"(?<!\\):")...)
+                end for ref in split(term_def_matches[2], ", "))
+         else # plain format
+             term_def = term_def_and_refs
+             term_refs = RefDict()
+         end
+
         term_namespace = getuniqueval(st, "namespace")
         if haskey(result, st.id)
             # term was automatically created, re-create it with the correct properties,
             # but preserve the existing relationships
-            term = result[st.id] = Term(result[st.id], term_name, term_obsolete, term_namespace, term_def)
+            term = result[st.id] = Term(result[st.id], term_name, term_obsolete, term_namespace, term_def, term_refs)
         else # brand new term
-            term = result[st.id] = Term(st.id, term_name, term_obsolete, term_namespace, term_def)
+            term = result[st.id] = Term(st.id, term_name, term_obsolete, term_namespace, term_def, term_refs)
         end
 
         for otherid in get(st.tagvalues, "is_a", String[])
