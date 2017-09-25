@@ -1,4 +1,6 @@
 const TermId = String
+const TagDict = Dict{String, Vector{String}}
+const RelDict = Dict{Symbol, Set{TermId}}
 
 struct Term
     id::TermId
@@ -8,16 +10,15 @@ struct Term
     namespace::String
     def::String
     synonyms::Vector{String}
-    tagvalues::Dict{String, Vector{String}}
+    tagvalues::TagDict
 
-    relationships::Dict{Symbol, Set{TermId}}
-    rev_relationships::Dict{Symbol, Set{TermId}} # reverse relationships
+    relationships::RelDict
+    rev_relationships::RelDict # reverse relationships
 
     Term(id::AbstractString, name::AbstractString="", obsolete::Bool=false,
          namespace::AbstractString="", def::AbstractString="") =
         new(id, name, obsolete, namespace, def, String[],
-            Dict{String, Vector{String}}(),
-            Dict{Symbol, Set{TermId}}(), Dict{Symbol, Set{TermId}}())
+            TagDict(), RelDict(), RelDict())
     Term(term::Term, name::AbstractString=term.name, obsolete::Bool=term.obsolete,
          namespace::AbstractString=term.namespace, def::AbstractString=term.def) =
         new(term.id, name, obsolete, namespace, def, term.synonyms,

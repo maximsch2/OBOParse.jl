@@ -3,7 +3,7 @@
 struct Stanza
     Typ::String # Official ones are: "Term", "Typedef" and "Instance"
     id::String
-    tagvalues::Dict{String, Vector{String}}
+    tagvalues::TagDict
 end
 
 function find_first_nonescaped(s, ch)
@@ -48,7 +48,7 @@ parseOBO(filepath::AbstractString) = open(parseOBO, filepath, "r")
 const r_stanza = r"^\[(.*)\]$"
 
 function parsetagvalues(s)
-    vals = Dict{String, Vector{String}}()
+    vals = TagDict()
 
     for line in eachline(s)
         line = strip(removecomments(line))
