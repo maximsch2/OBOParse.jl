@@ -146,7 +146,7 @@ function getterms(arr::Vector{Stanza})
             push!(rev_relationship(otherterm, rel_type), st.id)
         end
 
-        if isobsolete(term) && length(relationship(term ,:is_a)) > 0
+        if isobsolete(term) && length(relationship(term, :is_a)) > 0
             throw(OBOParseException("Obsolete term $term contains is_a relationship"))
         end
 
