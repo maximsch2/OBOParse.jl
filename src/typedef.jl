@@ -1,4 +1,4 @@
-immutable Typedef
+struct Typedef
     id::String
     name::String
     namespace::String

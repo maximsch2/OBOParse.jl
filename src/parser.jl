@@ -1,6 +1,6 @@
 # The OBO Flat File parser
 
-immutable Stanza
+struct Stanza
     Typ::String # Official ones are: "Term", "Typedef" and "Instance"
     id::String
     tagvalues::Dict{String, Vector{String}}

@@ -1,6 +1,6 @@
 const TermId = String
 
-immutable Term
+struct Term
     id::TermId
     name::String
 
