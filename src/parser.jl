@@ -1,5 +1,16 @@
 # The OBO Flat File parser
-
+"""
+Represents one entry in the OBO file, e.g.
+```
+[Term]
+id: GO:0000002
+namespace: biological_process
+def: BBB
+name: two
+```
+is stored as `Stanza` with `Typ` = "Term", `id` = "GO:0000002" and
+`tagvalues = Dict("id" => "GO:0000002", "namespace" => ["biological_process"], "def" => ["BBB"], "name" => "two")`.
+"""
 struct Stanza
     Typ::String # Official ones are: "Term", "Typedef" and "Instance"
     id::String
@@ -51,6 +62,7 @@ parseOBO(filepath::AbstractString) = open(parseOBO, filepath, "r")
 
 const r_stanza = r"^\[(.*)\]$"
 
+# returns tagvalues of the current Stanza and the type of the next one
 function parsetagvalues(s)
     vals = TagDict()
 
