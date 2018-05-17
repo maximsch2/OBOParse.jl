@@ -22,7 +22,11 @@ end
 
     @test length(GO) == 5
     @test GO["GO:0000002"].name == "two"
+    @test GO["GO:0000002"].def == "BBB"
+    @test GO["GO:0000002"].refs == OBOParse.RefDict()
     @test GO["GO:0000001"].name == "one"
+    @test GO["GO:0000001"].def == "AAA"
+    @test GO["GO:0000001"].refs == OBOParse.RefDict()
     @test GO["GO:0000004"].name == "four"
     @test GO["GO:0000005"].name == "five"
     @test GO["GO:0000006"].name == "six"
@@ -32,9 +36,12 @@ end
     GO = OBOParse.load("$testdir/data/go.obo", "GO")
     @test length(GO) > 71
 
+    @test GO["GO:0000009"].name == "alpha-1,6-mannosyltransferase activity"
+    @test GO["GO:0000009"].def == "Catalysis of the transfer of a mannose residue to an oligosaccharide, forming an alpha-(1->6) linkage."
+    @test GO["GO:0000009"].refs == OBOParse.RefDict("GOC"=>"mcc", "PMID"=>"2644248")
+
     term1 = gettermbyid(GO, 18)
     term2 = gettermbyid(GO, 6310)
-
     @test relationship(term1, :regulates) == Set{OBOParse.TermId}((term2.id,))
     @test relationship(term2, :regulates) == Set{OBOParse.TermId}()
 end

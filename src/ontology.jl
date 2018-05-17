@@ -1,5 +1,7 @@
-
-immutable Ontology
+"""
+The collection of all ontology terms and their relations.
+"""
+struct Ontology
     header::Dict{String, Vector{String}}
     prefix::String
     terms::Dict{TermId, Term}
@@ -18,7 +20,7 @@ function gettermbyname(ontology::Ontology, name)
     for term in allterms(ontology)
         (lowercase(term.name) == lname) && return term
     end
-    error("Term not found: $name")
+    throw(KeyError(name))
 end
 
 gettermid(ontology::Ontology, id::Integer) = @sprintf("%s:%07d", ontology.prefix, id)
@@ -39,8 +41,7 @@ Base.length(ontology::Ontology) = length(ontology.terms)
 parents(ontology::Ontology, term::Term, rel::Symbol = :is_a) = ontology[relationship(term, rel)]
 children(ontology::Ontology, term::Term, rel::Symbol = :is_a) = ontology[rev_relationship(term, rel)]
 
-# FIXME use const when 0.5 compatibility is dropped
-typealias VecOrTuple{T} Union{Vector{T}, Tuple{Vararg{T}}}
+const VecOrTuple{T} = Union{Vector{T}, Tuple{Vararg{T}}}
 
 # return the set of all nodes of the ontology DAG that could be visited from `term`
 # node when traveling along `rels` edges using `rev` direction
