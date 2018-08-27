@@ -41,13 +41,13 @@ Base.length(ontology::Ontology) = length(ontology.terms)
 parents(ontology::Ontology, term::Term, rel::Symbol = :is_a) = ontology[relationship(term, rel)]
 children(ontology::Ontology, term::Term, rel::Symbol = :is_a) = ontology[rev_relationship(term, rel)]
 
-const VecOrTuple{T} = Union{Vector{T}, Tuple{Vararg{T}}}
+const VecOrTuple{T} = Union{Vector{T}, Tuple{Vararg{T}}} where T
 
 # return the set of all nodes of the ontology DAG that could be visited from `term`
 # node when traveling along `rels` edges using `rev` direction
-function transitive_closure{T}(ontology::Ontology, term::Term,
-                               rels::VecOrTuple{Symbol},
-                               rev::Type{Val{T}} = Val{false})
+function transitive_closure(ontology::Ontology, term::Term,
+                            rels::VecOrTuple{Symbol},
+                            rev::Bool = false)
     # TODO: check if transitive & non-cyclical before doing so?
     res = Set{TermId}()
     frontier_ids = Set{TermId}((term.id,))
@@ -55,7 +55,7 @@ function transitive_closure{T}(ontology::Ontology, term::Term,
         new_ids = Set{TermId}()
         for f_id in frontier_ids, rel in rels
             f_term = ontology[f_id]
-            f_rel_ids = T ? rev_relationship(f_term, rel) : relationship(f_term, rel)
+            f_rel_ids = rev ? rev_relationship(f_term, rel) : relationship(f_term, rel)
             union!(new_ids, f_rel_ids)
         end
         frontier_ids = setdiff!(new_ids, res)
@@ -65,9 +65,9 @@ function transitive_closure{T}(ontology::Ontology, term::Term,
     return res
 end
 
-descendants(ontology::Ontology, term::Term, rels::VecOrTuple{Symbol}) = ontology[transitive_closure(ontology, term, rels, Val{true})]
+descendants(ontology::Ontology, term::Term, rels::VecOrTuple{Symbol}) = ontology[transitive_closure(ontology, term, rels, true)]
 descendants(ontology::Ontology, term::Term, rel::Symbol = :is_a) = descendants(ontology, term, (rel,))
-ancestors(ontology::Ontology, term::Term, rels::VecOrTuple{Symbol}) = ontology[transitive_closure(ontology, term, rels, Val{false})]
+ancestors(ontology::Ontology, term::Term, rels::VecOrTuple{Symbol}) = ontology[transitive_closure(ontology, term, rels, false)]
 ancestors(ontology::Ontology, term::Term, rel::Symbol = :is_a) = ancestors(ontology, term, (rel,))
 
 function satisfies(ontology::Ontology, term1::Term, rel::Symbol, term2::Term)

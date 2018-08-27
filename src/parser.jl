@@ -22,22 +22,22 @@ struct OBOParseException <: Exception
 end
 
 function find_first_nonescaped(s, ch)
-    i = searchindex(s, ch)
-    while i > 0
+    i = findfirst(isequal(ch), s)
+    while i !== nothing
         numescapes = 0
         @inbounds for j in i-1:-1:1
             (s[j] == '\\') || break
             numescapes += 1
         end
         iseven(numescapes) && return i # this is not escaped
-        i = searchindex(s, ch, i+1)
+        i = findnext(isequal(ch), s, i+1)
     end
     return i
 end
 
 function removecomments(line)
-    i = find_first_nonescaped(line, "!")
-    return i > 0 ? line[1:i-1] : line
+    i = find_first_nonescaped(line, '!')
+    return i !== nothing ? line[1:i-1] : line
 end
 
 const id_tag = "id"
@@ -84,18 +84,20 @@ end
 
 function tagvalue(line)
     # TODO: what an ad hoc parser!
-    i = searchindex(line, ": ")
-    if i == 0
+    i = findfirst(": ", line)
+    if i === nothing
         # empty tag value
-        endswith(line, ":") && (return line, "", true)
-
-        # empty strings are dummy
-        return "", "", false
+        if endswith(line, ":")
+            return line, "", true
+        else
+            # empty strings are dummy
+            return "", "", false
+        end
     end
 
-    j = searchindex(line, " !")
-    tag = line[1:i-1]
-    value = j==0 ? line[i+2:end] : line[i+2:j-1]
+    j = findfirst(" !", line)
+    tag = line[1:first(i)-1]
+    value = j === nothing ? line[first(i)+2:end] : line[first(i)+2:first(j)-1]
 
     return tag, value, true
 end

@@ -46,8 +46,14 @@ end
 
 
 Base.isless(term1::Term, term2::Term) = isless(term1.id, term2.id)
-Base.show(io::IO, term::Term) = @printf io "Term(\"%s\", \"%s\")" term.id term.name
-Base.showcompact(io::IO, term::Term) = print(io, term.id)
+
+function Base.show(io::IO, term::Term)
+    if get(io, :compact, false)
+        @printf io "Term(\"%s\", \"%s\")" term.id term.name
+    else
+        print(io, term.id)
+    end
+end
 
 isobsolete(term::Term) = term.obsolete
 
