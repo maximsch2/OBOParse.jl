@@ -1,6 +1,6 @@
 The OBOParser package is licensed under the MIT "Expat" License:
 
-> Copyright (c) 2015: Maxim Grechkin
+> Copyright (c) 2015-2018: Maxim Grechkin, Alexey Stukalov
 >
 > Permission is hereby granted, free of charge, to any person obtaining
 > a copy of this software and associated documentation files (the
